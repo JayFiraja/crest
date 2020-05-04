@@ -117,6 +117,7 @@ namespace Crest
 
         public static void DebugLog(string message, MessageType type, Object @object = null)
         {
+            message += " Click this error to highlight the problem object.";
             switch (type)
             {
                 // NOTE: this is incomplete

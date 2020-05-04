@@ -169,7 +169,7 @@ namespace Crest
             {
                 showMessage
                 (
-                    $"Shader assigned to ocean input expected to be of type <i>{ShaderPrefix}</i>. Click this error to highlight the input.",
+                    $"Shader assigned to ocean input expected to be of type <i>{ShaderPrefix}</i>.",
                     MessageType.Error, this
                 );
 
