@@ -66,13 +66,5 @@ namespace Crest
                 OceanRenderer.Instance.ReportMaxDisplacementFromShape(_maxDisplacementHorizontal, maxDispVert, 0f);
             }
         }
-
-        public override void OnInspectorValidation(List<ValidatedMessage> messages)
-        {
-            base.OnInspectorValidation(messages);
-            // This is for demonstration purposes. But it would have proper validation here and used by the logger validator too.
-            messages.Add(new ValidatedMessage() { message = "Warning 3", type = UnityEditor.MessageType.Warning });
-            messages.Add(new ValidatedMessage() { message = "Warning 4", type = UnityEditor.MessageType.Warning });
-        }
     }
 }

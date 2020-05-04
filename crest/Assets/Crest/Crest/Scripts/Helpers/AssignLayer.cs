@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace Crest
 {
@@ -11,7 +12,7 @@ namespace Crest
         {
             enabled = false;
 
-            if (!Validate(OceanRenderer.Instance))
+            if (!Validate(OceanRenderer.Instance, ValidatedHelper.DebugLog))
             {
                 return;
             }
@@ -19,7 +20,7 @@ namespace Crest
             gameObject.layer = LayerMask.NameToLayer(_layerName);
         }
 
-        public bool Validate(OceanRenderer ocean)
+        public bool Validate(OceanRenderer ocean, ValidatedHelper.ShowMessage showMessage)
         {
             if (string.IsNullOrEmpty(_layerName))
             {

@@ -2,6 +2,7 @@
 
 // This file is subject to the MIT License as seen in the root of this folder structure (LICENSE)
 
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -9,7 +10,14 @@ namespace Crest
 {
     public interface IValidated
     {
-        bool Validate(OceanRenderer ocean);
+        bool Validate(OceanRenderer ocean, ValidatedHelper.ShowMessage function);
+    }
+
+    // This is only used with help boxes since we want to group messages together.
+    public struct ValidatedMessage
+    {
+        public string message;
+        public MessageType type;
     }
 
 #if UNITY_EDITOR
@@ -72,7 +80,7 @@ namespace Crest
             var assignLayers = FindObjectsOfType<AssignLayer>();
             foreach (var assign in assignLayers)
             {
-                assign.Validate(ocean);
+                assign.Validate(ocean, ValidatedHelper.DebugLog);
             }
 
             // FloatingObjectBase
@@ -95,11 +103,36 @@ namespace Crest
             var inputs = FindObjectsOfType<RegisterLodDataInputBase>();
             foreach (var input in inputs)
             {
-                input.Validate(ocean);
+                input.Validate(ocean, ValidatedHelper.DebugLog);
             }
 
             Debug.Log("Validation complete!", ocean);
         }
+    }
+
+    public static class ValidatedHelper
+    {
+        // This won't work cos we want to combine strings for help box but not for debug log. So we would have to have a 
+        // collector which is the same as the advanced proposal anyway.
+        public delegate void ShowMessage(string message, MessageType type);
+
+        public static void DebugLog(string message, MessageType type)
+        {
+            switch (type)
+            {
+                // NOTE: this is incomplete
+                case MessageType.Warning: Debug.LogWarning(message); break;
+                case MessageType.Error: Debug.LogError(message); break;
+                default: Debug.Log(message); break;
+            }
+        }
+
+        public static void HelpBox(string message, MessageType type)
+        {
+            messages.Add(new ValidatedMessage { message = message, type = type });
+        }
+
+        public static readonly List<ValidatedMessage> messages = new List<ValidatedMessage>();
     }
 #endif
 }

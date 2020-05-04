@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -35,7 +36,7 @@ namespace Crest
     /// <summary>
     /// Base class for scripts that register input to the various LOD data types.
     /// </summary>
-    public abstract class RegisterLodDataInputBase : MonoBehaviour, ILodDataInput, IValidated
+    public abstract partial class RegisterLodDataInputBase : MonoBehaviour, ILodDataInput
     {
         [SerializeField, Tooltip("Check that the shader applied to this object matches the input type (so e.g. an Animated Waves input object has an Animated Waves input shader.")]
         bool _checkShaderName = true;
@@ -50,10 +51,6 @@ namespace Crest
 
         static DuplicateKeyComparer<int> s_comparer = new DuplicateKeyComparer<int>();
         static Dictionary<Type, OceanInput> s_registrar = new Dictionary<Type, OceanInput>();
-
-        // // This is required if we wanted to target this component using the property drawer approach rather than a
-        // // custom inspector.
-        // public ValidatedInspectorProperty _information;
 
         public static OceanInput GetRegistrar(Type lodDataMgrType)
         {
@@ -77,22 +74,12 @@ namespace Crest
             {
                 if (_checkShaderName)
                 {
-                    CheckShaderName(_renderer);
+                    CheckShaderName(_renderer, ValidatedHelper.DebugLog);
                 }
 
                 _materials[0] = _renderer.sharedMaterial;
                 _materials[1] = new Material(_renderer.sharedMaterial);
             }
-        }
-
-        bool CheckShaderName(Renderer renderer)
-        {
-            if (renderer.sharedMaterial && renderer.sharedMaterial.shader && !renderer.sharedMaterial.shader.name.StartsWith(ShaderPrefix))
-            {
-                Debug.LogError($"Shader assigned to ocean input expected to be of type <i>{ShaderPrefix}</i>. Click this error to highlight the input.", this);
-                return false;
-            }
-            return true;
         }
 
         public void Draw(CommandBuffer buf, float weight, int isTransition, int lodIdx)
@@ -106,40 +93,6 @@ namespace Crest
             }
         }
 
-        // Simple proposal. This could be improved.
-        public void OnInspectorValidation(out bool showMessage, out string message, out UnityEditor.MessageType messageType)
-        {
-            var renderer = GetComponent<MeshRenderer>();
-            if (!renderer.sharedMaterial)
-            {
-                showMessage = true;
-                message = "1. Renderer must have a material assigned";
-                messageType = UnityEditor.MessageType.Error;
-                return;
-            }
-
-            showMessage = false;
-            message = "";
-            messageType = UnityEditor.MessageType.None;
-        }
-
-        // Advanced proposal.
-        public virtual void OnInspectorValidation(List<ValidatedMessage> messages)
-        {
-            // This is for demonstration purposes. But it would have proper validation here and used by the logger validator too.
-            messages.Add(new ValidatedMessage() { message = "Error 1", type = UnityEditor.MessageType.Error });
-            messages.Add(new ValidatedMessage() { message = "Warning 1", type = UnityEditor.MessageType.Warning });
-            messages.Add(new ValidatedMessage() { message = "Warning 2", type = UnityEditor.MessageType.Warning });
-            messages.Add(new ValidatedMessage() { message = "Info 1", type = UnityEditor.MessageType.Info });
-        }
-
-        // Function proposal
-        public virtual void OnInspectorValidation(ValidatedHelper.ShowMessage showMessage)
-        {
-            // This is for demonstration purposes. But it would have proper validation here and used by the logger validator too.
-            showMessage("Warning 1\nWarning 2", UnityEditor.MessageType.Warning);
-        }
-
         public int MaterialCount => _materials.Length;
         public Material GetMaterial(int index) => _materials[index];
 
@@ -151,11 +104,6 @@ namespace Crest
             // Init here from 2019.3 onwards
             s_registrar.Clear();
             sp_Weight = Shader.PropertyToID("_Weight");
-        }
-
-        public bool Validate(OceanRenderer ocean)
-        {
-            return CheckShaderName(GetComponent<Renderer>());
         }
     }
 
@@ -206,4 +154,29 @@ namespace Crest
             }
         }
     }
+
+#if UNITY_EDITOR
+    public abstract partial class RegisterLodDataInputBase : IValidated
+    {
+        public bool Validate(OceanRenderer ocean, ValidatedHelper.ShowMessage function)
+        {
+            return CheckShaderName(GetComponent<Renderer>(), function);
+        }
+
+        bool CheckShaderName(Renderer renderer, ValidatedHelper.ShowMessage showMessage)
+        {
+            if (renderer.sharedMaterial && renderer.sharedMaterial.shader && !renderer.sharedMaterial.shader.name.StartsWith(ShaderPrefix))
+            {
+                showMessage
+                (
+                    $"Shader assigned to ocean input expected to be of type <i>{ShaderPrefix}</i>. Click this error to highlight the input.",
+                    MessageType.Error
+                );
+
+                return false;
+            }
+            return true;
+        }
+    }
+#endif
 }

@@ -2,36 +2,21 @@
 namespace Crest
 {
     using System;
-    using System.Collections.Generic;
     using UnityEditor;
 
     public abstract class ValidatedInspectorEditor : Editor
     {
-        readonly List<ValidatedMessage> _validationMessages = new List<ValidatedMessage>();
         public override void OnInspectorGUI()
         {
-            IValidatedInspector target = (IValidatedInspector)this.target;
-
-            // // NOTE: This is the basic proposal.
-            // target.OnInspectorValidation(out bool showMessage, out string message, out MessageType messageType);
-            // if (showMessage)
-            // {
-            //     EditorGUILayout.Space();
-            //     EditorGUILayout.HelpBox(message, messageType);
-            //     EditorGUILayout.Space();
-            // }
-
-
-            // // NOTE: Function Proposal. Doesn't really work. Detailed in PR
-            // target.OnInspectorValidation(ValidatedHelper.HelpBox);
-
-            // ADVANCED PROPOSAL
-            // The following is the more advanced proposal. It would allow us to reuse validation code.
+            IValidated target = (IValidated)this.target;
 
             var messageTypes = Enum.GetValues(typeof(MessageType));
 
-            _validationMessages.Clear();
-            target.OnInspectorValidation(_validationMessages);
+            // This is a static list. Not sure if this will ever be a threaded operation which would be an issue.
+            ValidatedHelper.messages.Clear();
+            // We will need to handle the null case for this
+            var ocean = FindObjectOfType<OceanRenderer>();
+            target.Validate(ocean, ValidatedHelper.HelpBox);
 
             // We only want space before and after the list of help boxes. We don't want space between.
             var needsSpaceAbove = true;
@@ -41,7 +26,7 @@ namespace Crest
             for (var messageTypeIndex = messageTypes.Length - 1; messageTypeIndex >= 0; messageTypeIndex--)
             {
                 // We would want make sure we don't produce garbage here
-                var filtered = _validationMessages.FindAll(x => (int) x.type == messageTypeIndex);
+                var filtered = ValidatedHelper.messages.FindAll(x => (int) x.type == messageTypeIndex);
                 if (filtered.Count > 0)
                 {
                     if (needsSpaceAbove)
