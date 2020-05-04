@@ -110,10 +110,9 @@ namespace Crest
         }
     }
 
+    // Holds the shared list for messages
     public static class ValidatedHelper
     {
-        // This won't work cos we want to combine strings for help box but not for debug log. So we would have to have a 
-        // collector which is the same as the advanced proposal anyway.
         public delegate void ShowMessage(string message, MessageType type);
 
         public static void DebugLog(string message, MessageType type)
@@ -132,6 +131,7 @@ namespace Crest
             messages.Add(new ValidatedMessage { message = message, type = type });
         }
 
+        // This is only used by the HelpBox function since we want to group them by severity (MessageType).
         public static readonly List<ValidatedMessage> messages = new List<ValidatedMessage>();
     }
 #endif
