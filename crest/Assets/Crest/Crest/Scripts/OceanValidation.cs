@@ -113,20 +113,20 @@ namespace Crest
     // Holds the shared list for messages
     public static class ValidatedHelper
     {
-        public delegate void ShowMessage(string message, MessageType type);
+        public delegate void ShowMessage(string message, MessageType type, Object @object = null);
 
-        public static void DebugLog(string message, MessageType type)
+        public static void DebugLog(string message, MessageType type, Object @object = null)
         {
             switch (type)
             {
                 // NOTE: this is incomplete
-                case MessageType.Warning: Debug.LogWarning(message); break;
-                case MessageType.Error: Debug.LogError(message); break;
-                default: Debug.Log(message); break;
+                case MessageType.Warning: Debug.LogWarning(message, @object); break;
+                case MessageType.Error: Debug.LogError(message, @object); break;
+                default: Debug.Log(message, @object); break;
             }
         }
 
-        public static void HelpBox(string message, MessageType type)
+        public static void HelpBox(string message, MessageType type, Object @object = null)
         {
             messages.Add(new ValidatedMessage { message = message, type = type });
         }

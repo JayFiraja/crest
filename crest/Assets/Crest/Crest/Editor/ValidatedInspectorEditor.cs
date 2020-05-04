@@ -3,12 +3,18 @@ namespace Crest
 {
     using System;
     using UnityEditor;
+    using UnityEngine;
 
     public abstract class ValidatedInspectorEditor : Editor
     {
         public override void OnInspectorGUI()
         {
             IValidated target = (IValidated)this.target;
+
+            // Enable rich text in help boxes. It is strange that this is how it has to be done. Not sure if 2018.4 bug
+            // or not.
+            GUIStyle richStyle = GUI.skin.GetStyle("HelpBox");
+            richStyle.richText = true;
 
             var messageTypes = Enum.GetValues(typeof(MessageType));
 
